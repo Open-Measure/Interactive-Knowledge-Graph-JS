@@ -45,7 +45,7 @@ https://jquery.com/
       background-color: #5599ff;
     }
 
-    #mynetwork {
+    #divGraph {
       width: 90%;
       border: 2px solid #999999;
       border-radius: 10px;
@@ -131,11 +131,11 @@ https://jquery.com/
     }
 
     function noSelection() {
-      document.getElementById("selectedItemDiv").innerHTML = "<i>No item selected</i>";
+      document.getElementById("spanFocuse").innerHTML = "<i>No item selected</i>";
     }
 
     function resetAll() {
-      $('#mySelect2').val(null).trigger('change');
+      $('#selectNodes').val(null).trigger('change');
       nodes.clear();
       edges.clear();
     }
@@ -209,14 +209,14 @@ https://jquery.com/
           });
 
           // Attach to the "When a SELECT2 single item is selected" event
-          $('#mySelect2').on('select2:select', function (e) {
+          $('#selectNodes').on('select2:select', function (e) {
             var nodeId = e.params.data.id;
             loadNode(nodeId);
             network.selectNodes([nodeId]);
           });
 
           // Attach to the "When a SELECT2 item is deselected" event
-          $('#mySelect2').on('select2:unselect', function (e) {
+          $('#selectNodes').on('select2:unselect', function (e) {
             var nodeId = e.params.data.id;
             unloadNode(nodeId);
           });
@@ -230,7 +230,7 @@ https://jquery.com/
 
           function startNetwork() {
 
-            var container = document.getElementById("mynetwork");
+            var container = document.getElementById("divGraph");
             var data = {
               nodes: nodes,
               edges: edges,
@@ -302,7 +302,7 @@ https://jquery.com/
                   }
                 });
 
-                document.getElementById("selectedItemDiv").innerHTML =
+                document.getElementById("spanFocusedNode").innerHTML =
                   '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
                   '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
                   '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />'
@@ -335,18 +335,18 @@ https://jquery.com/
 
 <body>
   <h1>The Open-Measure Interactive Knowledge Graph | <i>Version Beta 0.1</i></h1>
-  <label for="mySelect2">
+  <label for="selectNodes">
     Search and select items:
-    <select class="js-example-basic-multiple js-states form-control" id="mySelect2" multiple="multiple"
+    <select class="js-example-basic-multiple js-states form-control" id="selectNodes" multiple="multiple"
       style="width: 75%">
     </select>
   </label>
   <div>
-    <span id="selectedItemDiv"></span>
+    <span id="spanFocus"></span>
     <input type="button" onclick="resetAll()" value="Clear All">
 
   </div>
-  <div id="mynetwork"></div>
+  <div id="divGraph"></div>
 </body>
 
 </html>
