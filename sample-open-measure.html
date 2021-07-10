@@ -229,12 +229,15 @@ div.vis-network div.vis-navigation div.vis-button:hover {
 
       var nodeData = getNode(nodeId);
       var nodeLabel = nodeData.label;
+      applyNodeStyleSelected(nodeId);
+      /*
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
           size: 20
         }
       });
+      */
       document.getElementById("spanFocusedNode").innerHTML =
         '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
         '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
@@ -244,12 +247,17 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       for(i = 0; i < adjacentNodes.length - 1; i++){
         adjacentNodeId = adjacentNodes[i];
         loadNode(adjacentNodeId); // Assure that all adjacent nodes are loaded.
+        applyNodeStyleAdjacent(adjacentNodeId);
+        /*
         var nodeObject = visNetwork.body.nodes[nodeId];
         nodeObject.setOptions({
           font: {
           size: 16
           }
         });
+        */
+
+        loadAdjacent(nodeId); //Load the edges. TODO: rework this function to specialized it to load edges.
     }
     }
 
@@ -257,23 +265,29 @@ div.vis-network div.vis-navigation div.vis-button:hover {
 
       var nodeData = getNode(nodeId);
       var nodeLabel = nodeData.label;
+      applyNodeStyleNormal(nodeId);
+      /*
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
           size: 12
         }
       });
+      */
       document.getElementById("spanFocusedNode").innerHTML = "";
 
       adjacentNodes = listAdjacent(nodeId);
       for(i = 0; i++; i < adjacentNodes.length - 1){
         adjacentNodeId = adjacentNodes[i].id
-        var nodeObject = visNetwork.body.nodes[nodeId];
+        applyNodeStyleNormal(adjacentNodeId);
+        /*
+        var nodeObject = visNetwork.body.nodes[adjacentNodeId];
         nodeObject.setOptions({
           font: {
           size: 12
           }
         });
+        */
       }
     }
 
@@ -353,10 +367,10 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                 enabled: true,
                 barnesHut: {
                   //theta: 0.1,
-                  gravitationalConstant: -8000, /*Number. Default to -2000. Gravity attracts. We like repulsion. So the value is negative. If you want the repulsion to be stronger, decrease the value (so -10000, -50000).*/
+                  gravitationalConstant: -20000, /*Number. Default to -2000. Gravity attracts. We like repulsion. So the value is negative. If you want the repulsion to be stronger, decrease the value (so -10000, -50000).*/
                   centralGravity: .3,
                   springLength: 95, /*Number. Default to 95. The edges are modelled as springs. This springLength here is the the rest length of the spring.*/
-                  springConstant: 0.08, /*Number. Default to 0.04. This is how 'sturdy' the springs are. Higher values mean stronger springs.*/
+                  springConstant: 0.06, /*Number. Default to 0.04. This is how 'sturdy' the springs are. Higher values mean stronger springs.*/
                   damping: 0.09, /*Number. Default to 0.09. Accepted range: [0 .. 1]. The damping factor is how much of the velocity from the previous physics simulation iteration carries over to the next iteration.*/
                   avoidOverlap: 0.0 /*Number. Default to 0. Accepted range: [0 .. 1]. When larger than 0, the size of the node is taken into account. The distance will be calculated from the radius of the encompassing circle of the node for both the gravity model. Value 1 is maximum overlap avoidance.*/
                 },
@@ -388,8 +402,8 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                     background: '#D2E5FF'
                   }
                 },
-                size: 30,
-                shape: 'ellipse' //box is a good option as well.
+                size: 20,
+                shape: 'box' //box is a good option as well.
               }
             };
 
