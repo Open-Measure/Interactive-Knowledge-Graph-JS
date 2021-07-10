@@ -59,22 +59,22 @@ https://jquery.com/
     }
 
     div.vis-network div.vis-navigation div.vis-button.vis-up,
-div.vis-network div.vis-navigation div.vis-button.vis-down,
-div.vis-network div.vis-navigation div.vis-button.vis-left,
-div.vis-network div.vis-navigation div.vis-button.vis-right,
-div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
-div.vis-network div.vis-navigation div.vis-button.vis-zoomOut,
-div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
-  background-image: none !important;
-  font-size: 2em;
-  border: 2px solid #999999;
-  border-radius: 10px;
-  padding: 2px;
-  margin: 4px;
-  text-align: center;
-  vertical-align: middle;
-  background-color: #efefef;
-}
+    div.vis-network div.vis-navigation div.vis-button.vis-down,
+    div.vis-network div.vis-navigation div.vis-button.vis-left,
+    div.vis-network div.vis-navigation div.vis-button.vis-right,
+    div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
+    div.vis-network div.vis-navigation div.vis-button.vis-zoomOut,
+    div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
+      background-image: none !important;
+      font-size: 2em;
+      border: 2px solid #999999;
+      border-radius: 10px;
+      padding: 2px;
+      margin: 4px;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #efefef;
+    }
 
 div.vis-network div.vis-navigation div.vis-button:hover {
   box-shadow: none !important;
@@ -179,7 +179,6 @@ div.vis-network div.vis-navigation div.vis-button:hover {
     function loadNode(nodeId) {
       var targetNode = getNode(nodeId);
       visNodes.update(targetNode);
-      /*loadAdjacent(nodeId);*/
     }
 
     /**
@@ -189,6 +188,10 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       var result = sourceData.nodes.filter(obj => {
         return obj.id === nodeId
       });
+      node = result[0];
+      /* Replace white space with new lines. 
+         TODO: Find a cool algorithm that will break text with more intelligence. */
+      node.label = node.label.replaceAll(" ","\n");
       return result[0];
     }
 
@@ -196,8 +199,10 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
-          size: 20
-        }
+          size: 20},
+        color: {
+          border: '#999999',
+          background: '#5599ff'}
       });
     }
 
@@ -205,8 +210,10 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
-          size: 16
-        }
+          size: 16},
+        color: {
+          border: '#b3b3b3',
+          background: '#aaccff'}
       });
     }
 
@@ -214,30 +221,41 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
-          size: 12
-        }
-      });
+          size: 12},
+        color: {
+          border: '#b3b3b3',
+          background: '#ffffff'}
+        });
     }
+
+    var previousNode = null;
+    var previousAdjacent = null;
 
     /**
     * Manage the Node Selection event.
     */
     function onNodeSelection(nodeId){
 
+      // Apply normal style to previously selected node.
+      if(previousNode){
+        applyNodeStyleNormal(previousNode);
+      }      
+      // Apply normal style to adjacente nodes of previously selected node.
+      if(previousAdjacent){
+        for(i = 0; i < previousAdjacent.length; i++){
+          applyNodeStyleNormal(previousAdjacent[i]);
+        }
+      }
+
+      // If the selection event was triggered by the combobox,
+      // the newly selected node may not yet be loaded on the graph.
       loadNode(nodeId);
+
       visNetwork.selectNodes([nodeId]);
 
       var nodeData = getNode(nodeId);
       var nodeLabel = nodeData.label;
       applyNodeStyleSelected(nodeId);
-      /*
-      var nodeObject = visNetwork.body.nodes[nodeId];
-      nodeObject.setOptions({
-        font: {
-          size: 20
-        }
-      });
-      */
       document.getElementById("spanFocusedNode").innerHTML =
         '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
         '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
@@ -248,47 +266,15 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         adjacentNodeId = adjacentNodes[i];
         loadNode(adjacentNodeId); // Assure that all adjacent nodes are loaded.
         applyNodeStyleAdjacent(adjacentNodeId);
-        /*
-        var nodeObject = visNetwork.body.nodes[nodeId];
-        nodeObject.setOptions({
-          font: {
-          size: 16
-          }
-        });
-        */
-
         loadAdjacent(nodeId); //Load the edges. TODO: rework this function to specialized it to load edges.
-    }
+        }
+
+        previousNode = nodeId;
+        previousAdjacent = adjacentNodes;
     }
 
     function onNodeUnselection(nodeId){
-
-      var nodeData = getNode(nodeId);
-      var nodeLabel = nodeData.label;
-      applyNodeStyleNormal(nodeId);
-      /*
-      var nodeObject = visNetwork.body.nodes[nodeId];
-      nodeObject.setOptions({
-        font: {
-          size: 12
-        }
-      });
-      */
       document.getElementById("spanFocusedNode").innerHTML = "";
-
-      adjacentNodes = listAdjacent(nodeId);
-      for(i = 0; i++; i < adjacentNodes.length - 1){
-        adjacentNodeId = adjacentNodes[i].id
-        applyNodeStyleNormal(adjacentNodeId);
-        /*
-        var nodeObject = visNetwork.body.nodes[adjacentNodeId];
-        nodeObject.setOptions({
-          font: {
-          size: 12
-          }
-        });
-        */
-      }
     }
 
     $(document).ready(function () {
