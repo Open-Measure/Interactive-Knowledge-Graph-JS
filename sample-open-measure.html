@@ -15,8 +15,8 @@ https://jquery.com/
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script type="text/javascript" src="https://unpkg.com/vis-data@latest/peer/umd/vis-data.min.js"></script>
-  <script type="text/javascript" src="https://unpkg.com/vis-visNetwork@latest/peer/umd/vis-visNetwork.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://unpkg.com/vis-visNetwork/styles/vis-visNetwork.min.css" />
+  <script type="text/javascript" src="https://unpkg.com/vis-network@latest/peer/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/vis-network/styles/vis-network.min.css" />
   <style>
     * {
       font-family: helvetica
@@ -124,6 +124,7 @@ https://jquery.com/
     var visNodes = null;
     var visEdges = null;
     var visNetwork = null;
+    var sourceData = null;
 
     function unloadNode(nodeId) {
       visNodes.remove(nodeId);
@@ -131,7 +132,7 @@ https://jquery.com/
     }
 
     function noSelection() {
-      document.getElementById("spanFocusedNodeedNode").innerHTML = "<i>No item selected</i>";
+      document.getElementById("spanFocusedNode").innerHTML = "<i>No item selected</i>";
     }
 
     function resetAll() {
@@ -142,36 +143,36 @@ https://jquery.com/
 
     $(document).ready(function () {
 
-      fetch('https://raw.githubusercontent.com/Open-Measure/Confluence-Site/master/KnowledgeGraph/visNodes-data.json')
+      fetch('https://raw.githubusercontent.com/Open-Measure/Confluence-Site/master/KnowledgeGraph/data-v2.xlsm.json')
         .then(response => response.json())
         .then(function (data) {
 
-          var visNodesDatabase = data;
-
+          sourceData = data;
+          /*
           var visEdgesDatabase = [
             { id: "e1", from: "n2", to: "n1", label: "is a", arrows: "to" },
             { id: "e2", from: "n3", to: "n1", label: "is a", arrows: "to" },
             { id: "e3", from: "n3", to: "n4", label: "is a", arrows: "to" },
             { id: "e4", from: "n4", to: "n5", label: "is a", arrows: "to" }
           ];
-
+          */
           function getEdge(edgeId) {
-            var result = visEdgesDatabase.filter(obj => {
+            var result = sourceData.edges.filter(obj => {
               return obj.id === nodeId
             });
             return result[0];
           }
 
           function getNode(nodeId) {
-            var result = visNodesDatabase.filter(obj => {
+            var result = sourceData.nodes.filter(obj => {
               return obj.id === nodeId
             });
             return result[0];
           }
 
           function loadAdjacent(nodeId) {
-            for (i = 0; i < visEdgesDatabase.length; i++) {
-              myEdge = visEdgesDatabase[i];
+            for (i = 0; i < sourceData.edges.length; i++) {
+              myEdge = sourceData.edges[i];
               if (myEdge.from == nodeId || myEdge.to == nodeId) {
                 visEdges.update(myEdge);
                 visNodes.update(getNode(myEdge.from));
@@ -193,8 +194,8 @@ https://jquery.com/
 
           // Prepare SELECT2 options in the desired format
           var optionsList = [];
-          for (i = 0; i < data.length; i++) {
-            optionsList.push({ id: data[i].id, text: data[i].label });
+          for (i = 0; i < sourceData.nodes.length; i++) {
+            optionsList.push({ id: sourceData.nodes[i].id, text: sourceData.nodes[i].label });
           };
 
           // Make SELECT2 alive
@@ -228,15 +229,15 @@ https://jquery.com/
           visEdges = new vis.DataSet();
           visNetwork = {};
 
-          function startvisNetwork() {
+          function startNetwork() {
 
             var container = document.getElementById("divGraph");
             var data = {
-              visNodes: visNodes,
-              visEdges: visEdges,
+              nodes: visNodes,
+              edges: visEdges
             };
 
-            var visNetworkOptions = {
+            var options = {
               interaction: {
                 navigationButtons: true,
                 keyboard: true,
@@ -260,12 +261,12 @@ https://jquery.com/
                   enabled: true,
                   iterations: 500,
                   updateInterval: 100,
-                  onlyDynamicvisEdges: false,
+                  onlyDynamicEdges: false,
                   fit: true
                 },
                 timestep: 0.5
               },
-              visNodes: {
+              nodes: {
                 borderWidth: 1,
                 borderWidthSelected: 2,
                 chosen: true,
@@ -286,23 +287,23 @@ https://jquery.com/
               }
             };
 
-            visNetwork = new vis.visNetwork(container, data, visNetworkOptions);
+            visNetwork = new vis.Network(container, data, options);
 
             visNetwork.on("selectNode", function (params) {
-              var nodeId = params.visNodes[0];
+              var nodeId = params.nodes[0];
               if (nodeId) {
 
                 loadNode(nodeId);
                 var nodeData = getNode(nodeId);
                 var nodeLabel = nodeData.label;
-                var nodeObject = visNetwork.body.visNodes[nodeId];
+                var nodeObject = visNetwork.body.nodes[nodeId];
                 nodeObject.setOptions({
                   font: {
                     size: 20
                   }
                 });
 
-                document.getElementById("spanFocusedNodeedNodedNode").innerHTML =
+                document.getElementById("spanFocusedNode").innerHTML =
                   '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
                   '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
                   '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />'
@@ -312,8 +313,8 @@ https://jquery.com/
             });
 
             visNetwork.on("deselectNode", function (params) {
-              var nodeId = params.previousSelection.visNodes[0].id;
-              var node = visNetwork.body.visNodes[nodeId];
+              var nodeId = params.previousSelection.nodes[0].id;
+              var node = visNetwork.body.nodes[nodeId];
               if (node) {
                 node.setOptions({
                   font: {
@@ -325,7 +326,7 @@ https://jquery.com/
 
           }
 
-          startvisNetwork();
+          startNetwork();
 
         }); /*End of data fetching*/
 
