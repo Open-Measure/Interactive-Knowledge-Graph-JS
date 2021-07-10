@@ -141,6 +141,139 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       visEdges.clear();
     }
 
+    
+    /**
+    * Load the adjacent nodes of a node from the Data Source into the Network Graph.
+    */
+    function loadAdjacent(nodeId) {
+      for (i = 0; i < sourceData.edges.length; i++) {
+        myEdge = sourceData.edges[i];
+        if (myEdge.from == nodeId || myEdge.to == nodeId) {
+          visEdges.update(myEdge);
+          visNodes.update(getNode(myEdge.from));
+          visNodes.update(getNode(myEdge.to));
+        }
+      }
+    }
+
+    /**
+    * List the adjacent nodes of a node from the Data Source into the Network Graph.
+    */
+    function listAdjacent(nodeId) {
+      nodesList = [];
+      for (i = 0; i < sourceData.edges.length; i++) {
+        myEdge = sourceData.edges[i];
+        if (myEdge.from == nodeId && myEdge.to != nodeId){
+          nodesList.push(myEdge.to);
+        } 
+        if (myEdge.to == nodeId && myEdge.from != nodeId){
+          nodesList.push(myEdge.from);
+        } 
+      }
+      return nodesList;
+    }
+
+    /**
+    * Load a node from the Data Source into the Network Graph.
+    */
+    function loadNode(nodeId) {
+      var targetNode = getNode(nodeId);
+      visNodes.update(targetNode);
+      /*loadAdjacent(nodeId);*/
+    }
+
+    /**
+    * Retrieve a node from the Data Source as a Javascript object.
+    */
+    function getNode(nodeId) {
+      var result = sourceData.nodes.filter(obj => {
+        return obj.id === nodeId
+      });
+      return result[0];
+    }
+
+    function applyNodeStyleSelected(nodeId){
+      var nodeObject = visNetwork.body.nodes[nodeId];
+      nodeObject.setOptions({
+        font: {
+          size: 20
+        }
+      });
+    }
+
+    function applyNodeStyleAdjacent(nodeId){
+      var nodeObject = visNetwork.body.nodes[nodeId];
+      nodeObject.setOptions({
+        font: {
+          size: 16
+        }
+      });
+    }
+
+    function applyNodeStyleNormal(nodeId){
+      var nodeObject = visNetwork.body.nodes[nodeId];
+      nodeObject.setOptions({
+        font: {
+          size: 12
+        }
+      });
+    }
+
+    /**
+    * Manage the Node Selection event.
+    */
+    function onNodeSelection(nodeId){
+
+      var nodeData = getNode(nodeId);
+      var nodeLabel = nodeData.label;
+      var nodeObject = visNetwork.body.nodes[nodeId];
+      nodeObject.setOptions({
+        font: {
+          size: 20
+        }
+      });
+      document.getElementById("spanFocusedNode").innerHTML =
+        '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
+        '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
+        '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />';
+
+      adjacentNodes = listAdjacent(nodeId);
+      for(i = 0; i++; i < adjacentNodes.length - 1){
+        adjacentNodeId = adjacentNodes[i].id
+        loadNode(adjacentNodeId); // Assure that all adjacent nodes are loaded.
+        var nodeObject = visNetwork.body.nodes[nodeId];
+        nodeObject.setOptions({
+          font: {
+          size: 16
+          }
+        });
+    }
+    }
+
+    function onNodeUnselection(nodeId){
+
+      var nodeData = getNode(nodeId);
+      var nodeLabel = nodeData.label;
+      var nodeObject = visNetwork.body.nodes[nodeId];
+      nodeObject.setOptions({
+        font: {
+          size: 12
+        }
+      });
+      document.getElementById("spanFocusedNode").innerHTML = "";
+
+      adjacentNodes = listAdjacent(nodeId);
+      for(i = 0; i++; i < adjacentNodes.length - 1){
+        adjacentNodeId = adjacentNodes[i].id
+        var nodeObject = visNetwork.body.nodes[nodeId];
+        nodeObject.setOptions({
+          font: {
+          size: 12
+          }
+        });
+      }
+    }
+
     $(document).ready(function () {
 
       fetch('https://raw.githubusercontent.com/Open-Measure/Confluence-Site/master/KnowledgeGraph/data-v2.xlsm.json')
@@ -148,43 +281,12 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         .then(function (data) {
 
           sourceData = data;
-          /*
-          var visEdgesDatabase = [
-            { id: "e1", from: "n2", to: "n1", label: "is a", arrows: "to" },
-            { id: "e2", from: "n3", to: "n1", label: "is a", arrows: "to" },
-            { id: "e3", from: "n3", to: "n4", label: "is a", arrows: "to" },
-            { id: "e4", from: "n4", to: "n5", label: "is a", arrows: "to" }
-          ];
-          */
+
           function getEdge(edgeId) {
             var result = sourceData.edges.filter(obj => {
               return obj.id === nodeId
             });
             return result[0];
-          }
-
-          function getNode(nodeId) {
-            var result = sourceData.nodes.filter(obj => {
-              return obj.id === nodeId
-            });
-            return result[0];
-          }
-
-          function loadAdjacent(nodeId) {
-            for (i = 0; i < sourceData.edges.length; i++) {
-              myEdge = sourceData.edges[i];
-              if (myEdge.from == nodeId || myEdge.to == nodeId) {
-                visEdges.update(myEdge);
-                visNodes.update(getNode(myEdge.from));
-                visNodes.update(getNode(myEdge.to));
-              }
-            }
-          }
-
-          function loadNode(nodeId) {
-            var targetNode = getNode(nodeId);
-            visNodes.update(targetNode);
-            loadAdjacent(nodeId);
           }
 
           function getMoreInformation(nodeId) {
@@ -212,13 +314,15 @@ div.vis-network div.vis-navigation div.vis-button:hover {
           // Attach to the "When a SELECT2 single item is selected" event
           $('#comboboxNodes').on('select2:select', function (e) {
             var nodeId = e.params.data.id;
-            loadNode(nodeId);
-            visNetwork.selectNodes([nodeId]);
+            onNodeSelection(nodeId); /*XXX*/
+            //loadNode(nodeId);
+            //visNetwork.selectNodes([nodeId]);
           });
 
           // Attach to the "When a SELECT2 item is deselected" event
           $('#comboboxNodes').on('select2:unselect', function (e) {
             var nodeId = e.params.data.id;
+            // Remove the node from the graph.
             unloadNode(nodeId);
           });
 
@@ -292,8 +396,11 @@ div.vis-network div.vis-navigation div.vis-button:hover {
             visNetwork.on("selectNode", function (params) {
               var nodeId = params.nodes[0];
               if (nodeId) {
+                
+                onNodeSelection(nodeId);
 
-                loadNode(nodeId);
+                /*loadNode(nodeId);*/ /* Assure that adjacent nodes are loaded */
+                /*
                 var nodeData = getNode(nodeId);
                 var nodeLabel = nodeData.label;
                 var nodeObject = visNetwork.body.nodes[nodeId];
@@ -308,12 +415,17 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                   '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
                   '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />'
                   ;
+                */
                 //visNetwork.focus(nodeId); //re-center the graph on the newly selected node
               }
             });
 
             visNetwork.on("deselectNode", function (params) {
               var nodeId = params.previousSelection.nodes[0].id;
+              if(nodeId){
+                onNodeUnselection(nodeId);
+              }
+              /*
               var node = visNetwork.body.nodes[nodeId];
               if (node) {
                 node.setOptions({
@@ -322,8 +434,8 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                   }
                 });
               }
+              */
             });
-
           }
 
           startNetwork();
@@ -345,7 +457,6 @@ div.vis-network div.vis-navigation div.vis-button:hover {
   <div>
     <span id="spanFocusedNode"></span>
     <input type="button" onclick="resetAll()" value="Clear All">
-
   </div>
   <div id="divGraph"></div>
 </body>
