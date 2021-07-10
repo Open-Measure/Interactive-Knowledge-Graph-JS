@@ -58,65 +58,65 @@ https://jquery.com/
       background-color: #ffffff;
     }
 
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-up,
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-down,
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-left,
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-right,
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-zoomIn,
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-zoomOut,
-    div.vis-visNetwork div.vis-navigation div.vis-button.vis-zoomExtends {
-      background-image: none !important;
-      font-size: 2em;
-      border: 2px solid #999999;
-      border-radius: 10px;
-      padding: 2px;
-      margin: 4px;
-      text-align: center;
-      vertical-align: middle;
-      background-color: #efefef;
-    }
+    div.vis-network div.vis-navigation div.vis-button.vis-up,
+div.vis-network div.vis-navigation div.vis-button.vis-down,
+div.vis-network div.vis-navigation div.vis-button.vis-left,
+div.vis-network div.vis-navigation div.vis-button.vis-right,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomOut,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
+  background-image: none !important;
+  font-size: 2em;
+  border: 2px solid #999999;
+  border-radius: 10px;
+  padding: 2px;
+  margin: 4px;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #efefef;
+}
 
-    div.vis-visNetwork div.vis-navigation div.vis-button:hover {
-      box-shadow: none !important;
-    }
+div.vis-network div.vis-navigation div.vis-button:hover {
+  box-shadow: none !important;
+}
 
-    .vis-button:after {
-      color: #555555;
-    }
+.vis-button:after {
+  color: #555555;
+}
 
-    .vis-button:hover:after {
-      color: "#0066ff";
-    }
+.vis-button:hover:after {
+  color: "#0066ff";
+}
 
-    .vis-button.vis-up:after {
-      content: "▲";
-    }
+.vis-button.vis-up:after {
+  content: "▲";
+}
 
-    .vis-button.vis-down:after {
-      content: "▼";
-    }
+.vis-button.vis-down:after {
+  content: "▼";
+}
 
-    .vis-button.vis-left:after {
-      content: "◀";
-    }
+.vis-button.vis-left:after {
+  content: "◀";
+}
 
-    .vis-button.vis-right:after {
-      content: "▶";
-    }
+.vis-button.vis-right:after {
+  content: "▶";
+}
 
-    .vis-button.vis-zoomIn:after {
-      content: "+";
-      font-weight: bold;
-    }
+.vis-button.vis-zoomIn:after {
+  content: "+";
+  font-weight: bold;
+}
 
-    .vis-button.vis-zoomOut:after {
-      content: "−";
-      font-weight: bold;
-    }
+.vis-button.vis-zoomOut:after {
+  content: "−";
+  font-weight: bold;
+}
 
-    .vis-button.vis-zoomExtends:after {
-      content: "⤧";
-    }
+.vis-button.vis-zoomExtends:after {
+  content: "⤧";
+}
   </style>
   <script type="text/javascript">
 
@@ -246,13 +246,13 @@ https://jquery.com/
               physics: {
                 enabled: true,
                 barnesHut: {
-                  theta: 0.5,
-                  gravitationalConstant: -1500,
-                  centralGravity: 0.5,
-                  springLength: 50,
-                  springConstant: 0.04,
-                  damping: 0.09,
-                  avoidOverlap: 0.2
+                  //theta: 0.1,
+                  gravitationalConstant: -8000, /*Number. Default to -2000. Gravity attracts. We like repulsion. So the value is negative. If you want the repulsion to be stronger, decrease the value (so -10000, -50000).*/
+                  centralGravity: .3,
+                  springLength: 95, /*Number. Default to 95. The edges are modelled as springs. This springLength here is the the rest length of the spring.*/
+                  springConstant: 0.08, /*Number. Default to 0.04. This is how 'sturdy' the springs are. Higher values mean stronger springs.*/
+                  damping: 0.09, /*Number. Default to 0.09. Accepted range: [0 .. 1]. The damping factor is how much of the velocity from the previous physics simulation iteration carries over to the next iteration.*/
+                  avoidOverlap: 0.0 /*Number. Default to 0. Accepted range: [0 .. 1]. When larger than 0, the size of the node is taken into account. The distance will be calculated from the radius of the encompassing circle of the node for both the gravity model. Value 1 is maximum overlap avoidance.*/
                 },
                 maxVelocity: 5,
                 minVelocity: 1,
@@ -264,7 +264,7 @@ https://jquery.com/
                   onlyDynamicEdges: false,
                   fit: true
                 },
-                timestep: 0.5
+                timestep: 0.4 /*Number. Default to 0.5. The physics simulation is discrete. This means we take a step in time, calculate the forces, move the nodes and take another step. If you increase this number the steps will be too large and the network can get unstable. If you see a lot of jittery movement in the network, you may want to reduce this value a little.*/
               },
               nodes: {
                 borderWidth: 1,
