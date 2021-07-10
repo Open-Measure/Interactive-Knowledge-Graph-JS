@@ -224,6 +224,9 @@ div.vis-network div.vis-navigation div.vis-button:hover {
     */
     function onNodeSelection(nodeId){
 
+      loadNode(nodeId);
+      visNetwork.selectNodes([nodeId]);
+
       var nodeData = getNode(nodeId);
       var nodeLabel = nodeData.label;
       var nodeObject = visNetwork.body.nodes[nodeId];
@@ -238,8 +241,8 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />';
 
       adjacentNodes = listAdjacent(nodeId);
-      for(i = 0; i++; i < adjacentNodes.length - 1){
-        adjacentNodeId = adjacentNodes[i].id
+      for(i = 0; i < adjacentNodes.length - 1; i++){
+        adjacentNodeId = adjacentNodes[i];
         loadNode(adjacentNodeId); // Assure that all adjacent nodes are loaded.
         var nodeObject = visNetwork.body.nodes[nodeId];
         nodeObject.setOptions({
@@ -316,7 +319,6 @@ div.vis-network div.vis-navigation div.vis-button:hover {
             var nodeId = e.params.data.id;
             onNodeSelection(nodeId); /*XXX*/
             //loadNode(nodeId);
-            //visNetwork.selectNodes([nodeId]);
           });
 
           // Attach to the "When a SELECT2 item is deselected" event
