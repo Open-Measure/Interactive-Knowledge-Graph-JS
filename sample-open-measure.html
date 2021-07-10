@@ -1,246 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<title>The Open-Measure Interactive Knowledge Graph | <i>Version Beta 0.1</i></title>
-<!--
+  <meta charset="utf-8" />
+  <title>The Open-Measure Interactive Knowledge Graph | <i>Version Beta 0.1</i></title>
+  <!--
 Big hugs to:
 https://visjs.org/
 https://select2.org/
 https://jquery.com/
 ...and probably many others.
 -->
-<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script type="text/javascript" src="https://unpkg.com/vis-data@latest/peer/umd/vis-data.min.js"></script>
-<script type="text/javascript" src="https://unpkg.com/vis-network@latest/peer/umd/vis-network.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://unpkg.com/vis-network/styles/vis-network.min.css" />
-<style>
-  * { font-family: helvetica }
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vis-data@latest/peer/umd/vis-data.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vis-network@latest/peer/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/vis-network/styles/vis-network.min.css" />
+  <style>
+    * {
+      font-family: helvetica
+    }
 
-  input[type=button] {
-    border: 2px solid #999999;
-    border-radius: 10px;
-    font-size: 1em;
-    font-weight: bold;
-    padding: 4px;
-    text-align: center;
-    vertical-align: middle;
-    background-color: #efefef;
-  }
+    input[type=button] {
+      border: 2px solid #999999;
+      border-radius: 10px;
+      font-size: 1em;
+      font-weight: bold;
+      padding: 4px;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #efefef;
+    }
 
-  #nodeHeaderTitle {
-    color: black;
-    font-weight: bold;
-    width: 80%;
-    border: 2px solid #999999;
-    border-radius: 10px;
-    padding: 6px;
-    margin: 4px;
-    vertical-align: middle;
-    background-color: #5599ff;
-  }
+    #nodeHeaderTitle {
+      color: black;
+      font-weight: bold;
+      width: 80%;
+      border: 2px solid #999999;
+      border-radius: 10px;
+      padding: 6px;
+      margin: 4px;
+      vertical-align: middle;
+      background-color: #5599ff;
+    }
 
-  #mynetwork {
-    width: 90%;
-    border: 2px solid #999999;
-    border-radius: 10px;
-    height: 550px; /* BUG: This is a bug, I rather want the DIV element to take all the window available height */
-    padding: 2px;
-    margin: 4px;
-    text-align: center;
-    vertical-align: middle;
-    background-color: #ffffff;
-  }
+    #mynetwork {
+      width: 90%;
+      border: 2px solid #999999;
+      border-radius: 10px;
+      height: 550px;
+      /* BUG: This is a bug, I rather want the DIV element to take all the window available height */
+      padding: 2px;
+      margin: 4px;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #ffffff;
+    }
 
-div.vis-network div.vis-navigation div.vis-button.vis-up,
-div.vis-network div.vis-navigation div.vis-button.vis-down,
-div.vis-network div.vis-navigation div.vis-button.vis-left,
-div.vis-network div.vis-navigation div.vis-button.vis-right,
-div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
-div.vis-network div.vis-navigation div.vis-button.vis-zoomOut,
-div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
-  background-image: none !important;
-  font-size: 2em;
-  border: 2px solid #999999;
-  border-radius: 10px;
-  padding: 2px;
-  margin: 4px;
-  text-align: center;
-  vertical-align: middle;
-  background-color: #efefef;
-}
+    div.vis-network div.vis-navigation div.vis-button.vis-up,
+    div.vis-network div.vis-navigation div.vis-button.vis-down,
+    div.vis-network div.vis-navigation div.vis-button.vis-left,
+    div.vis-network div.vis-navigation div.vis-button.vis-right,
+    div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
+    div.vis-network div.vis-navigation div.vis-button.vis-zoomOut,
+    div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
+      background-image: none !important;
+      font-size: 2em;
+      border: 2px solid #999999;
+      border-radius: 10px;
+      padding: 2px;
+      margin: 4px;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #efefef;
+    }
 
-div.vis-network div.vis-navigation div.vis-button:hover {
-  box-shadow: none !important;
-}
+    div.vis-network div.vis-navigation div.vis-button:hover {
+      box-shadow: none !important;
+    }
 
-.vis-button:after {
-  color: #555555;
-}
+    .vis-button:after {
+      color: #555555;
+    }
 
-.vis-button:hover:after {
-  color: "#0066ff";
-}
+    .vis-button:hover:after {
+      color: "#0066ff";
+    }
 
-.vis-button.vis-up:after {
-  content: "▲";
-}
+    .vis-button.vis-up:after {
+      content: "▲";
+    }
 
-.vis-button.vis-down:after {
-  content: "▼";
-}
+    .vis-button.vis-down:after {
+      content: "▼";
+    }
 
-.vis-button.vis-left:after {
-  content: "◀";
-}
+    .vis-button.vis-left:after {
+      content: "◀";
+    }
 
-.vis-button.vis-right:after {
-  content: "▶";
-}
+    .vis-button.vis-right:after {
+      content: "▶";
+    }
 
-.vis-button.vis-zoomIn:after {
-  content: "+";
-  font-weight: bold;
-}
+    .vis-button.vis-zoomIn:after {
+      content: "+";
+      font-weight: bold;
+    }
 
-.vis-button.vis-zoomOut:after {
-  content: "−";
-  font-weight: bold;
-}
+    .vis-button.vis-zoomOut:after {
+      content: "−";
+      font-weight: bold;
+    }
 
-.vis-button.vis-zoomExtends:after {
-  content: "⤧";
-}
-</style>
-<script type="text/javascript">
+    .vis-button.vis-zoomExtends:after {
+      content: "⤧";
+    }
+  </style>
+  <script type="text/javascript">
 
-// Global variables
-var nodes = null;
-var edges = null;
-var network = null;
+    // Global variables
+    var nodes = null;
+    var edges = null;
+    var network = null;
 
-function unloadNode(nodeId){
-  nodes.remove(nodeId);
-  noSelection();
-  }
-
-function noSelection(){
-  document.getElementById("selectedItemDiv").innerHTML = "<i>No item selected</i>";
-  }
-
-function resetAll() {
-  $('#mySelect2').val(null).trigger('change');
-  nodes.clear();
-  edges.clear();
-  }
-
-$(document).ready(function() {
-
-    fetch('https://raw.githubusercontent.com/Open-Measure/Confluence-Site/master/KnowledgeGraph/nodes-data.json')
-      .then(response => response.json())
-      .then(function(data){
-
-      var nodesDatabase = data;
-
-      var edgesDatabase = [
-                { id: "e1", from: "n2", to: "n1", label:"is a", arrows:"to" },
-                { id: "e2", from: "n3", to: "n1", label:"is a", arrows:"to" },
-                { id: "e3", from: "n3", to: "n4", label:"is a", arrows:"to" },
-                { id: "e4", from: "n4", to: "n5", label:"is a", arrows:"to" }
-              ];
-
-      function getEdge(edgeId){
-        var result = edgesDatabase.filter(obj => {
-          return obj.id === nodeId
-        });
-        return result[0];
-      }
-
-      function getNode(nodeId){
-        var result = nodesDatabase.filter(obj => {
-          return obj.id === nodeId
-        });
-        return result[0];
-      }
-
-      function loadAdjacent(nodeId){
-        for (i = 0; i < edgesDatabase.length; i++) {
-          myEdge = edgesDatabase[i];
-          if(myEdge.from == nodeId || myEdge.to == nodeId){
-            edges.update(myEdge);
-            nodes.update(getNode(myEdge.from));
-            nodes.update(getNode(myEdge.to));
-          }
-        }
-      }
-
-      function loadNode(nodeId){
-        var targetNode = getNode(nodeId);
-        nodes.update(targetNode);
-        loadAdjacent(nodeId);
-      }
-
-      function getMoreInformation(nodeId){
-        var targetNode = getNode(nodeId);
-        window.open(targetNode.url, "_blank");
-      }
-
-      // Prepare SELECT2 options in the desired format
-      var selectOptions = [];
-      for(i = 0; i < data.length; i++){
-        selectOptions.push({id: data[i].id, text: data[i].label});
-      };
-
-      // Make SELECT2 alive
-      $('.js-example-basic-multiple').select2({
-        tags: true,
-        tokenSeparators: [',', ' '],
-        data: selectOptions,
-        createTag: function(params) {
-          // Disable nodes creation by the user
-          return undefined;
-        }
-      });
-
-      // Attach to the "When a SELECT2 single item is selected" event
-      $('#mySelect2').on('select2:select', function (e) {
-        var nodeId = e.params.data.id;
-        loadNode(nodeId);
-        network.selectNodes([nodeId]);
-      });
-
-      // Attach to the "When a SELECT2 item is deselected" event
-      $('#mySelect2').on('select2:unselect', function (e) {
-        var nodeId = e.params.data.id;
-        unloadNode(nodeId);
-      });
-
-      // Start with a clean SELECT2
+    function unloadNode(nodeId) {
+      nodes.remove(nodeId);
       noSelection();
+    }
 
-      nodes = new vis.DataSet();
-      edges = new vis.DataSet();
-      network = {};
+    function noSelection() {
+      document.getElementById("selectedItemDiv").innerHTML = "<i>No item selected</i>";
+    }
 
-      function startNetwork(){
+    function resetAll() {
+      $('#mySelect2').val(null).trigger('change');
+      nodes.clear();
+      edges.clear();
+    }
 
-        var container = document.getElementById("mynetwork");
-              var data = {
-                nodes: nodes,
-                edges: edges,
-              };
+    $(document).ready(function () {
 
-        var networkOptions = {
-          interaction: {
-            navigationButtons: true,
-            keyboard: true,
-            multiselect: false
-          },
-          physics: {
-            enabled: true,
-            barnesHut: {
+      fetch('https://raw.githubusercontent.com/Open-Measure/Confluence-Site/master/KnowledgeGraph/nodes-data.json')
+        .then(response => response.json())
+        .then(function (data) {
+
+          var nodesDatabase = data;
+
+          var edgesDatabase = [
+            { id: "e1", from: "n2", to: "n1", label: "is a", arrows: "to" },
+            { id: "e2", from: "n3", to: "n1", label: "is a", arrows: "to" },
+            { id: "e3", from: "n3", to: "n4", label: "is a", arrows: "to" },
+            { id: "e4", from: "n4", to: "n5", label: "is a", arrows: "to" }
+          ];
+
+          function getEdge(edgeId) {
+            var result = edgesDatabase.filter(obj => {
+              return obj.id === nodeId
+            });
+            return result[0];
+          }
+
+          function getNode(nodeId) {
+            var result = nodesDatabase.filter(obj => {
+              return obj.id === nodeId
+            });
+            return result[0];
+          }
+
+          function loadAdjacent(nodeId) {
+            for (i = 0; i < edgesDatabase.length; i++) {
+              myEdge = edgesDatabase[i];
+              if (myEdge.from == nodeId || myEdge.to == nodeId) {
+                edges.update(myEdge);
+                nodes.update(getNode(myEdge.from));
+                nodes.update(getNode(myEdge.to));
+              }
+            }
+          }
+
+          function loadNode(nodeId) {
+            var targetNode = getNode(nodeId);
+            nodes.update(targetNode);
+            loadAdjacent(nodeId);
+          }
+
+          function getMoreInformation(nodeId) {
+            var targetNode = getNode(nodeId);
+            window.open(targetNode.url, "_blank");
+          }
+
+          // Prepare SELECT2 options in the desired format
+          var selectOptions = [];
+          for (i = 0; i < data.length; i++) {
+            selectOptions.push({ id: data[i].id, text: data[i].label });
+          };
+
+          // Make SELECT2 alive
+          $('.js-example-basic-multiple').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            data: selectOptions,
+            createTag: function (params) {
+              // Disable nodes creation by the user
+              return undefined;
+            }
+          });
+
+          // Attach to the "When a SELECT2 single item is selected" event
+          $('#mySelect2').on('select2:select', function (e) {
+            var nodeId = e.params.data.id;
+            loadNode(nodeId);
+            network.selectNodes([nodeId]);
+          });
+
+          // Attach to the "When a SELECT2 item is deselected" event
+          $('#mySelect2').on('select2:unselect', function (e) {
+            var nodeId = e.params.data.id;
+            unloadNode(nodeId);
+          });
+
+          // Start with a clean SELECT2
+          noSelection();
+
+          nodes = new vis.DataSet();
+          edges = new vis.DataSet();
+          network = {};
+
+          function startNetwork() {
+
+            var container = document.getElementById("mynetwork");
+            var data = {
+              nodes: nodes,
+              edges: edges,
+            };
+
+            var networkOptions = {
+              interaction: {
+                navigationButtons: true,
+                keyboard: true,
+                multiselect: false
+              },
+              physics: {
+                enabled: true,
+                barnesHut: {
                   theta: 0.5,
                   gravitationalConstant: -1500,
                   centralGravity: 0.5,
@@ -249,98 +253,100 @@ $(document).ready(function() {
                   damping: 0.09,
                   avoidOverlap: 0.2
                 },
-            maxVelocity: 5,
-            minVelocity: 1,
-          solver: 'barnesHut',
-          stabilization: {
-            enabled: true,
-            iterations: 500,
-            updateInterval: 100,
-            onlyDynamicEdges: false,
-            fit: true
-            },
-          timestep: 0.5
-          },
-          nodes:{
-            borderWidth: 1,
-            borderWidthSelected: 2,
-            chosen: true,
-            color: {
-              border: '#b3b3b3',
-              background: '#aaccff',
-              highlight: {
-                border: '#999999',
-                background: '#5599ff'
+                maxVelocity: 5,
+                minVelocity: 1,
+                solver: 'barnesHut',
+                stabilization: {
+                  enabled: true,
+                  iterations: 500,
+                  updateInterval: 100,
+                  onlyDynamicEdges: false,
+                  fit: true
+                },
+                timestep: 0.5
               },
-              hover: {
-                border: '#2B7CE9',
-                background: '#D2E5FF'
+              nodes: {
+                borderWidth: 1,
+                borderWidthSelected: 2,
+                chosen: true,
+                color: {
+                  border: '#b3b3b3',
+                  background: '#aaccff',
+                  highlight: {
+                    border: '#999999',
+                    background: '#5599ff'
+                  },
+                  hover: {
+                    border: '#2B7CE9',
+                    background: '#D2E5FF'
+                  }
+                },
+                size: 30,
+                shape: 'ellipse' //box is a good option as well.
               }
-            },
-            size: 30,
-            shape: 'ellipse' //box is a good option as well.
+            };
+
+            network = new vis.Network(container, data, networkOptions);
+
+            network.on("selectNode", function (params) {
+              var nodeId = params.nodes[0];
+              if (nodeId) {
+
+                loadNode(nodeId);
+                var nodeData = getNode(nodeId);
+                var nodeLabel = nodeData.label;
+                var nodeObject = network.body.nodes[nodeId];
+                nodeObject.setOptions({
+                  font: {
+                    size: 20
+                  }
+                });
+
+                document.getElementById("selectedItemDiv").innerHTML =
+                  '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
+                  '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
+                  '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />'
+                  ;
+                //network.focus(nodeId); //re-center the graph on the newly selected node
+              }
+            });
+
+            network.on("deselectNode", function (params) {
+              var nodeId = params.previousSelection.nodes[0].id;
+              var node = network.body.nodes[nodeId];
+              if (node) {
+                node.setOptions({
+                  font: {
+                    size: 15
+                  }
+                });
+              }
+            });
+
           }
-        };
 
-    network = new vis.Network(container, data, networkOptions);
+          startNetwork();
 
-    network.on("selectNode", function (params) {
-      var nodeId = params.nodes[0];
-      if(nodeId){
+        }); /*End of data fetching*/
 
-        loadNode(nodeId);
-        var nodeData = getNode(nodeId);
-        var nodeLabel = nodeData.label;
-        var nodeObject = network.body.nodes[nodeId];
-        nodeObject.setOptions({
-          font: {
-            size: 20
-        }});
-
-        document.getElementById("selectedItemDiv").innerHTML =
-          '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
-          '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
-          '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />'
-          ;
-        //network.focus(nodeId); //re-center the graph on the newly selected node
-        }
-      });
-
-    network.on("deselectNode", function (params) {
-      var nodeId = params.previousSelection.nodes[0].id;
-      var node = network.body.nodes[nodeId];
-      if(node){
-      node.setOptions({
-        font: {
-          size: 15
-          }});
-        }
-      });
-
-    }
-
-    startNetwork();
-
-    }); /*End of data fetching*/
-
-  });
-</script>
+    });
+  </script>
 </head>
+
 <body>
-<h1>The Open-Measure Interactive Knowledge Graph | <i>Version Beta 0.1</i></h1>
+  <h1>The Open-Measure Interactive Knowledge Graph | <i>Version Beta 0.1</i></h1>
   <label for="mySelect2">
     Search and select items:
-    <select class="js-example-basic-multiple js-states form-control" id="mySelect2" multiple="multiple"  style="width: 75%">
+    <select class="js-example-basic-multiple js-states form-control" id="mySelect2" multiple="multiple"
+      style="width: 75%">
     </select>
   </label>
   <div>
-  <span id="selectedItemDiv"></span>
-  <input
-         type="button"
-         onclick="resetAll()"
-         value="Clear All">
+    <span id="selectedItemDiv"></span>
+    <input type="button" onclick="resetAll()" value="Clear All">
 
   </div>
-<div id="mynetwork"></div>
+  <div id="mynetwork"></div>
 </body>
+
 </html>
