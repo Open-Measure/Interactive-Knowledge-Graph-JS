@@ -210,9 +210,9 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
-          size: 16},
+          size: 18},
         color: {
-          border: '#b3b3b3',
+          border: '#aaaaaa',
           background: '#aaccff'}
       });
     }
@@ -221,7 +221,7 @@ div.vis-network div.vis-navigation div.vis-button:hover {
       var nodeObject = visNetwork.body.nodes[nodeId];
       nodeObject.setOptions({
         font: {
-          size: 12},
+          size: 14},
         color: {
           border: '#b3b3b3',
           background: '#ffffff'}
@@ -236,16 +236,18 @@ div.vis-network div.vis-navigation div.vis-button:hover {
     */
     function onNodeSelection(nodeId){
 
+      var cleaningNodes = [];
       // Apply normal style to previously selected node.
       if(previousNode){
-        applyNodeStyleNormal(previousNode);
+        cleaningNodes.push(nodeId);
       }      
       // Apply normal style to adjacente nodes of previously selected node.
       if(previousAdjacent){
-        for(i = 0; i < previousAdjacent.length; i++){
-          applyNodeStyleNormal(previousAdjacent[i]);
-        }
+        cleaningNodes.concat(previousAdjacent);
       }
+
+      // Remove the newly selected node from the nodes to be cleaned.
+      cleaningNodes.filter(item => item !== nodeId);
 
       // If the selection event was triggered by the combobox,
       // the newly selected node may not yet be loaded on the graph.
@@ -262,16 +264,26 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />';
 
       adjacentNodes = listAdjacent(nodeId);
+      console.log(adjacentNodes.length);
       for(i = 0; i < adjacentNodes.length - 1; i++){
         adjacentNodeId = adjacentNodes[i];
+        // Remove the newly selected node from the nodes to be cleaned.
+        cleaningNodes.filter(item => item !== adjacentNodeId);
         loadNode(adjacentNodeId); // Assure that all adjacent nodes are loaded.
         applyNodeStyleAdjacent(adjacentNodeId);
         loadAdjacent(nodeId); //Load the edges. TODO: rework this function to specialized it to load edges.
         }
+        if(cleaningNodes){
+        for(i = 0; i < cleaningNodes.length; i++){
+          applyNodeStyleNormal(cleaningNodes[i]);
+        }
+      }
 
-        previousNode = nodeId;
-        previousAdjacent = adjacentNodes;
-    }
+      previousNode = nodeId;
+      previousAdjacent = adjacentNodes;
+
+
+      }
 
     function onNodeUnselection(nodeId){
       document.getElementById("spanFocusedNode").innerHTML = "";
@@ -378,7 +390,7 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                 chosen: true,
                 color: {
                   border: '#b3b3b3',
-                  background: '#aaccff',
+                  background: '#ffffff',
                   highlight: {
                     border: '#999999',
                     background: '#5599ff'
@@ -388,7 +400,7 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                     background: '#D2E5FF'
                   }
                 },
-                size: 20,
+                size: 14,
                 shape: 'box' //box is a good option as well.
               }
             };
