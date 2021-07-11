@@ -150,8 +150,8 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         myEdge = sourceData.edges[i];
         if (myEdge.from == nodeId || myEdge.to == nodeId) {
           visEdges.update(myEdge);
-          visNodes.update(getNode(myEdge.from));
-          visNodes.update(getNode(myEdge.to));
+          //visNodes.update(getNode(myEdge.from));
+          //visNodes.update(getNode(myEdge.to));
         }
       }
     }
@@ -162,12 +162,12 @@ div.vis-network div.vis-navigation div.vis-button:hover {
     function listAdjacent(nodeId) {
       nodesList = [];
       for (i = 0; i < sourceData.edges.length; i++) {
-        myEdge = sourceData.edges[i];
-        if (myEdge.from == nodeId && myEdge.to != nodeId){
-          nodesList.push(myEdge.to);
+        edgeSourceData = sourceData.edges[i];
+        if (edgeSourceData.from == nodeId){ //&& edgeSourceData.to != nodeId){
+          nodesList.push(edgeSourceData.to);
         } 
-        if (myEdge.to == nodeId && myEdge.from != nodeId){
-          nodesList.push(myEdge.from);
+        if (edgeSourceData.to == nodeId){ //&& edgeSourceData.from != nodeId){
+          nodesList.push(edgeSourceData.from);
         } 
       }
       return nodesList;
@@ -177,8 +177,29 @@ div.vis-network div.vis-navigation div.vis-button:hover {
     * Load a node from the Data Source into the Network Graph.
     */
     function loadNode(nodeId) {
-      var targetNode = getNode(nodeId);
-      visNodes.update(targetNode);
+      // Check if the graph node exists already.
+      graphNode = visNodes.get(nodeId);
+      if(!graphNode){
+        // Load the node in the graph if it was not already previously loaded.
+        visNodes.update(getNode(nodeId));
+        console.log("Graph Node Loaded: " + nodeId);
+      }
+
+      // Assure all node edges are loaded
+      // Assure all adjacent nodes are also loaded
+      for (i = 0; i < sourceData.edges.length; i++) {
+        edgeSourceData = sourceData.edges[i];
+        if (edgeSourceData.from == nodeId || edgeSourceData.to == nodeId) {
+          edgeId = edgeSourceData.id;
+          graphEdge = visEdges.get(edgeId);
+          if(!graphEdge){
+            visEdges.update(edgeSourceData);
+            visNodes.update(getNode(edgeSourceData.from));
+            visNodes.update(getNode(edgeSourceData.to));
+            console.log("Graph Edge Loaded: " + edgeId);
+          }
+        }
+      }
     }
 
     /**
@@ -204,6 +225,7 @@ div.vis-network div.vis-navigation div.vis-button:hover {
           border: '#999999',
           background: '#5599ff'}
       });
+      console.log("Style=Selected: " + nodeId);
     }
 
     function applyNodeStyleAdjacent(nodeId){
@@ -212,9 +234,10 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         font: {
           size: 18},
         color: {
-          border: '#aaaaaa',
+          border: '#ff0000',
           background: '#aaccff'}
       });
+      console.log("Style=Adjacent: " + nodeId);
     }
 
     function applyNodeStyleNormal(nodeId){
@@ -226,32 +249,30 @@ div.vis-network div.vis-navigation div.vis-button:hover {
           border: '#b3b3b3',
           background: '#ffffff'}
         });
+        console.log("Style=Normal: " + nodeId); 
     }
 
-    var previousNode = null;
-    var previousAdjacent = null;
-
     /**
-    * Manage the Node Selection event.
+    * When a node is selected on the graph, load adjacent nodes and apply cool styles.
     */
     function onNodeSelection(nodeId){
-
-      var cleaningNodes = [];
-      // Apply normal style to previously selected node.
-      if(previousNode){
-        cleaningNodes.push(nodeId);
-      }      
-      // Apply normal style to adjacente nodes of previously selected node.
-      if(previousAdjacent){
-        cleaningNodes.concat(previousAdjacent);
-      }
+      console.log("Selected: " + nodeId);
 
       // Remove the newly selected node from the nodes to be cleaned.
-      cleaningNodes.filter(item => item !== nodeId);
+      //cleaningNodes.filter(item => item !== nodeId);
 
       // If the selection event was triggered by the combobox,
       // the newly selected node may not yet be loaded on the graph.
+      // Also, we need to assure that all adjacent nodes are
+      // loaded on the graph.
       loadNode(nodeId);
+
+      // Clean styles
+      cleaningNodes = visNodes.getIds();
+      for(i = 0; i < cleaningNodes.length; i++){
+        console.log(i);
+        applyNodeStyleNormal(cleaningNodes[i]);
+      }
 
       visNetwork.selectNodes([nodeId]);
 
@@ -264,25 +285,16 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />';
 
       adjacentNodes = listAdjacent(nodeId);
+      console.log("Review adjacent nodes: " + adjacentNodes);
       console.log(adjacentNodes.length);
-      for(i = 0; i < adjacentNodes.length - 1; i++){
+      for(i = 0; i < adjacentNodes.length; i++){
         adjacentNodeId = adjacentNodes[i];
         // Remove the newly selected node from the nodes to be cleaned.
-        cleaningNodes.filter(item => item !== adjacentNodeId);
-        loadNode(adjacentNodeId); // Assure that all adjacent nodes are loaded.
+        //cleaningNodes.filter(item => item !== adjacentNodeId);
         applyNodeStyleAdjacent(adjacentNodeId);
-        loadAdjacent(nodeId); //Load the edges. TODO: rework this function to specialized it to load edges.
         }
-        if(cleaningNodes){
-        for(i = 0; i < cleaningNodes.length; i++){
-          applyNodeStyleNormal(cleaningNodes[i]);
-        }
-      }
 
-      previousNode = nodeId;
-      previousAdjacent = adjacentNodes;
-
-
+      //visNetwork.focus(nodeId); //re-center the graph on the newly selected node
       }
 
     function onNodeUnselection(nodeId){
@@ -356,6 +368,9 @@ div.vis-network div.vis-navigation div.vis-button:hover {
             };
 
             var options = {
+              groups:{
+                useDefaultGroups: true /* We tweak the group use case to populate semantic groups */
+              },
               interaction: {
                 navigationButtons: true,
                 keyboard: true,
@@ -410,27 +425,7 @@ div.vis-network div.vis-navigation div.vis-button:hover {
             visNetwork.on("selectNode", function (params) {
               var nodeId = params.nodes[0];
               if (nodeId) {
-                
                 onNodeSelection(nodeId);
-
-                /*loadNode(nodeId);*/ /* Assure that adjacent nodes are loaded */
-                /*
-                var nodeData = getNode(nodeId);
-                var nodeLabel = nodeData.label;
-                var nodeObject = visNetwork.body.nodes[nodeId];
-                nodeObject.setOptions({
-                  font: {
-                    size: 20
-                  }
-                });
-
-                document.getElementById("spanFocusedNode").innerHTML =
-                  '<span id="nodeHeaderTitle">' + nodeLabel + '</span>' +
-                  '&nbsp;<a type="button" href="' + nodeData.url + '" target="_blank">Wiki Page</a>' +
-                  '&nbsp;<input type="button" onclick="unloadNode(\'' + nodeId + '\');" value="Remove" />'
-                  ;
-                */
-                //visNetwork.focus(nodeId); //re-center the graph on the newly selected node
               }
             });
 
@@ -439,16 +434,6 @@ div.vis-network div.vis-navigation div.vis-button:hover {
               if(nodeId){
                 onNodeUnselection(nodeId);
               }
-              /*
-              var node = visNetwork.body.nodes[nodeId];
-              if (node) {
-                node.setOptions({
-                  font: {
-                    size: 15
-                  }
-                });
-              }
-              */
             });
           }
 
