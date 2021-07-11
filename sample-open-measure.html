@@ -223,7 +223,11 @@ div.vis-network div.vis-navigation div.vis-button:hover {
           size: 20},
         color: {
           border: '#999999',
-          background: '#5599ff'}
+          background: '#5599ff',
+          highlight: {
+            border: '#999999',
+            background: '#5599ff'
+          }}
       });
       console.log("Style=Selected: " + nodeId);
     }
@@ -274,8 +278,6 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         applyNodeStyleNormal(cleaningNodes[i]);
       }
 
-      visNetwork.selectNodes([nodeId]);
-
       var nodeData = getNode(nodeId);
       var nodeLabel = nodeData.label;
       applyNodeStyleSelected(nodeId);
@@ -294,11 +296,12 @@ div.vis-network div.vis-navigation div.vis-button:hover {
         applyNodeStyleAdjacent(adjacentNodeId);
         }
 
+      //visNetwork.selectNodes([nodeId]);
       //visNetwork.focus(nodeId); //re-center the graph on the newly selected node
       }
 
     function onNodeUnselection(nodeId){
-      document.getElementById("spanFocusedNode").innerHTML = "";
+      //document.getElementById("spanFocusedNode").innerHTML = "";
     }
 
     $(document).ready(function () {
@@ -367,6 +370,8 @@ div.vis-network div.vis-navigation div.vis-button:hover {
               edges: visEdges
             };
 
+            /* TODO: It would be better to use HighlightNearest rather
+            than do all this custom implementation with styles tweaking... */
             var options = {
               groups:{
                 useDefaultGroups: true /* We tweak the group use case to populate semantic groups */
@@ -374,7 +379,8 @@ div.vis-network div.vis-navigation div.vis-button:hover {
               interaction: {
                 navigationButtons: true,
                 keyboard: true,
-                multiselect: false
+                multiselect: false //,
+                //hover: true
               },
               physics: {
                 enabled: true,
@@ -399,42 +405,49 @@ div.vis-network div.vis-navigation div.vis-button:hover {
                 },
                 timestep: 0.4 /*Number. Default to 0.5. The physics simulation is discrete. This means we take a step in time, calculate the forces, move the nodes and take another step. If you increase this number the steps will be too large and the network can get unstable. If you see a lot of jittery movement in the network, you may want to reduce this value a little.*/
               },
+              edges: {
+                color: { color: "#aaaaaa" },
+                arrows: {
+                  //from: { enabled: true, type: "bar" },
+                  //middle: { enabled: true, type: "triangle" },
+                  to: { enabled: true, type: "arrow" }
+                }
+              },
               nodes: {
-                borderWidth: 1,
-                borderWidthSelected: 2,
+                //borderWidth: 1,
+                //borderWidthSelected: 2,
                 chosen: true,
                 color: {
-                  border: '#b3b3b3',
+                  //border: '#b3b3b3',
                   background: '#ffffff',
                   highlight: {
-                    border: '#999999',
+                    //border: '#0000ff'
                     background: '#5599ff'
                   },
-                  hover: {
-                    border: '#2B7CE9',
-                    background: '#D2E5FF'
-                  }
+                  //hover: {
+                    //border: '#CD5C5C'
+                  //},
                 },
-                size: 14,
+                //size: 14,
                 shape: 'box' //box is a good option as well.
               }
             };
 
             visNetwork = new vis.Network(container, data, options);
-
             visNetwork.on("selectNode", function (params) {
               var nodeId = params.nodes[0];
               if (nodeId) {
                 onNodeSelection(nodeId);
               }
             });
-
+            /*
             visNetwork.on("deselectNode", function (params) {
               var nodeId = params.previousSelection.nodes[0].id;
               if(nodeId){
                 onNodeUnselection(nodeId);
               }
             });
+            */
           }
 
           startNetwork();
